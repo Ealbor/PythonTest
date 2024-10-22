@@ -5,7 +5,8 @@ from ipaddress import ip_address
 with open('dns_to_ip.yaml', 'r') as file:
     data = yaml.safe_load(file)
 
-# Sort by IP address
+# Sort the dictionary by the IP address
+# key=lambda item: ip_address(item[1]) sorts by the IP value (the second element in each item)
 sorted_data = dict(sorted(data.items(), key=lambda item: ip_address(item[1])))
 
 # Write the sorted data back to the YAML file
