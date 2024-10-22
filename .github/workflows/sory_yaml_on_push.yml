@@ -9,11 +9,14 @@ on:
 jobs:
   sort_yaml:
     runs-on: ubuntu-latest
-    
+
     steps:
       # Step 1: Check out the latest version of the repo
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          # Provide write permissions so the action can push changes
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Step 2: Set up Python environment
       - name: Set up Python
