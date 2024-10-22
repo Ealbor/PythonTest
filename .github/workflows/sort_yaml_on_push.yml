@@ -1,47 +1,47 @@
-# name: Sort YAML on Push
+name: Sort YAML on Push
 
-# # Trigger the workflow when pushing to the master branch
-# on:
-#   push:
-#     branches:
-#       - master
+# Trigger the workflow when pushing to the master branch
+on:
+  push:
+    branches:
+      - master
 
-# jobs:
-#   sort_yaml:
-#     runs-on: ubuntu-latest
+jobs:
+  sort_yaml:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       # Step 1: Check out the latest version of the codebase
-#       - name: Checkout code
-#         uses: actions/checkout@v3 
+    steps:
+      # Step 1: Check out the latest version of the codebase
+      - name: Checkout code
+        uses: actions/checkout@v3 
 
-#       # Step 2: Set up Python environment
-#       - name: Set up Python
-#         uses: actions/setup-python@v3
-#         with:
-#           python-version: '3.x'
+      # Step 2: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.x'
 
-#       # Step 3: Install dependencies (PyYAML)
-#       - name: Install PyYAML
-#         run: |
-#           pip install pyyaml
+      # Step 3: Install dependencies (PyYAML)
+      - name: Install PyYAML
+        run: |
+          pip install pyyaml
 
-#       # Step 4: Run the Python sorting script
-#       - name: Sort YAML file
-#         run: |
-#           python sort_yaml.py
+      # Step 4: Run the Python sorting script
+      - name: Sort YAML file
+        run: |
+          python sort_yaml.py
 
-#       # Step 5: Check if the file has changed
-#       - name: Check for changes
-#         run: |
-#           git diff --exit-code dns_to_ip.yaml || exit 1
+      # Step 5: Check if the file has changed
+      - name: Check for changes
+        run: |
+          git diff --exit-code dns_to_ip.yaml || exit 1
 
-#       # Step 6: Commit and push changes if sorting occurred
-#       - name: Commit and push sorted file
-#         if: failure()
-#         run: |
-#           git config --global user.name 'GitHub Actions'
-#           git config --global user.email 'actions@github.com'
-#           git add dns_to_ip.yaml
-#           git commit -m "Auto-sorted YAML file"
-#           git push
+      # Step 6: Commit and push changes if sorting occurred
+      - name: Commit and push sorted file
+        if: failure()
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+          git add dns_to_ip.yaml
+          git commit -m "Auto-sorted YAML file"
+          git push
