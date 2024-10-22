@@ -1,8 +1,8 @@
-name: Sort YAML on Push
+name: Sort YAML on Pull Request
 
-# Trigger the workflow on push to the master branch
+# Trigger the workflow on a pull request to master
 on:
-  push:
+  pull_request:
     branches:
       - master
 
@@ -15,7 +15,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          # Provide write permissions so the action can push changes
           token: ${{ secrets.GITHUB_TOKEN }}
 
       # Step 2: Set up Python environment
@@ -24,22 +23,31 @@ jobs:
         with:
           python-version: '3.x'
 
-      # Step 3: Install PyYAML (to handle YAML files)
-      - name: Install PyYAML
-        run: |
-          pip install pyyaml
-
-      # Step 4: Run the Python sorting script
+      # Step 3: Inline Python to sort YAML file by IP address
       - name: Sort YAML file
         run: |
-          python sort_yaml.py
+          python -c "
+import yaml
+from ipaddress import ip_address
 
-      # Step 5: Check if the file has changed (do not exit on changes)
+# Load the YAML file
+with open('dns_to_ip.yaml', 'r') as file:
+    data = yaml.safe_load(file)
+
+# Sort by IP address
+sorted_data = dict(sorted(data.items(), key=lambda item: ip_address(item[1])))
+
+# Write the sorted data back to the YAML file
+with open('dns_to_ip.yaml', 'w') as file:
+    yaml.dump(sorted_data, file, default_flow_style=False)
+          "
+
+      # Step 4: Check if the file has changed (do not exit on changes)
       - name: Check for changes
         run: |
           git diff --exit-code dns_to_ip.yaml || echo "Changes detected, proceeding to commit."
 
-      # Step 6: Commit and push sorted file if changes occurred
+      # Step 5: Commit and push sorted file if changes occurred
       - name: Commit and push sorted file
         if: always() # Always run this step
         run: |
