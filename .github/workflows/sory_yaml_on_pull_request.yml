@@ -20,27 +20,11 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: pip install pyyaml
 
       - name: Sort YAML file
-        run: |
-          echo "
-          import yaml
-          from ipaddress import ip_address
-
-          # Load the YAML file
-          with open('dns_to_ip.yaml', 'r') as file:
-              data = yaml.safe_load(file)
-
-          # Sort by IP address
-          sorted_data = dict(sorted(data.items(), key=lambda item: ip_address(item[1])))
-
-          # Write the sorted data back to the YAML file
-          with open('dns_to_ip.yaml', 'w') as file:
-              yaml.dump(sorted_data, file, default_flow_style=False)
-          " > sort_yaml.py
-          python sort_yaml.py
+        run: python sort_yaml.py
 
       - name: Check for changes
         run: |
