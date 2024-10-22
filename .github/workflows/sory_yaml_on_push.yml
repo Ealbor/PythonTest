@@ -1,6 +1,6 @@
 name: Sort YAML on Push
 
-# Trigger the workflow when pushing to the master branch
+# Trigger the workflow on push to the master branch
 on:
   push:
     branches:
@@ -9,11 +9,11 @@ on:
 jobs:
   sort_yaml:
     runs-on: ubuntu-latest
-
+    
     steps:
-      # Step 1: Check out the latest version of the codebase
-      - name: Checkout code
-        uses: actions/checkout@v3 
+      # Step 1: Check out the latest version of the repo
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       # Step 2: Set up Python environment
       - name: Set up Python
@@ -21,7 +21,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      # Step 3: Install dependencies (PyYAML)
+      # Step 3: Install PyYAML (to handle YAML files)
       - name: Install PyYAML
         run: |
           pip install pyyaml
@@ -31,17 +31,21 @@ jobs:
         run: |
           python sort_yaml.py
 
-      # Step 5: Check if the file has changed
+      # Step 5: Check if the file has changed (do not exit on changes)
       - name: Check for changes
         run: |
-          git diff --exit-code dns_to_ip.yaml || exit 1
+          git diff --exit-code dns_to_ip.yaml || echo "Changes detected, proceeding to commit."
 
-      # Step 6: Commit and push changes if sorting occurred
+      # Step 6: Commit and push sorted file if changes occurred
       - name: Commit and push sorted file
-        if: failure()
+        if: always() # Always run this step
         run: |
-          git config --global user.name 'GitHub Actions'
-          git config --global user.email 'actions@github.com'
-          git add dns_to_ip.yaml
-          git commit -m "Auto-sorted YAML file"
-          git push
+          if [ -n "$(git status --porcelain)" ]; then
+            git config --global user.name 'GitHub Actions'
+            git config --global user.email 'actions@github.com'
+            git add dns_to_ip.yaml
+            git commit -m "Auto-sorted YAML file"
+            git push;
+          else
+            echo "No changes to commit.";
+          fi
