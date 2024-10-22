@@ -26,7 +26,7 @@ jobs:
       # Step 3: Inline Python to sort YAML file by IP address
       - name: Sort YAML file
         run: |
-          python -c "
+          python - <<EOF
 import yaml
 from ipaddress import ip_address
 
@@ -40,7 +40,7 @@ sorted_data = dict(sorted(data.items(), key=lambda item: ip_address(item[1])))
 # Write the sorted data back to the YAML file
 with open('dns_to_ip.yaml', 'w') as file:
     yaml.dump(sorted_data, file, default_flow_style=False)
-          "
+EOF
 
       # Step 4: Check if the file has changed (do not exit on changes)
       - name: Check for changes
