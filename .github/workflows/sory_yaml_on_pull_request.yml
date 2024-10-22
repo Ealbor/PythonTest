@@ -14,17 +14,32 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # Fetch full history so we can push back
+          ref: ${{ github.head_ref }}  # Check out the branch from the PR source
 
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.x'
 
-      - name: Install Dependencies
-        run: pip install pyyaml
-
+      # Inline Python to sort YAML file by IP address
       - name: Sort YAML file
-        run: python sort_yaml.py
+        run: |
+          python - <<EOF
+import yaml
+from ipaddress import ip_address
+
+# Load the YAML file
+with open('dns_to_ip.yaml', 'r') as file:
+    data = yaml.safe_load(file)
+
+# Sort by IP address
+sorted_data = dict(sorted(data.items(), key=lambda item: ip_address(item[1])))
+
+# Write the sorted data back to the YAML file
+with open('dns_to_ip.yaml', 'w') as file:
+    yaml.dump(sorted_data, file, default_flow_style=False)
+EOF
 
       - name: Check for changes
         run: |
@@ -38,7 +53,7 @@ jobs:
             git config --global user.email 'actions@github.com'
             git add dns_to_ip.yaml
             git commit -m "Auto-sorted YAML file"
-            git push
+            git push origin HEAD:${{ github.head_ref }}  # Push changes to the PR branch
           else
             echo "No changes to commit."
           fi
