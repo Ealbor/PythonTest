@@ -1,6 +1,5 @@
 name: Sort YAML on Pull Request
 
-# Trigger the workflow on a pull request to master
 on:
   pull_request:
     branches:
@@ -11,21 +10,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the latest version of the repo
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 2: Set up Python environment
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
           python-version: '3.x'
 
-      # Step 3: Inline Python to sort YAML file by IP address
+      - name: Install dependencies
+        run: pip install pyyaml
+
       - name: Sort YAML file
         run: |
+          echo "
           import yaml
           from ipaddress import ip_address
 
@@ -39,22 +39,22 @@ jobs:
           # Write the sorted data back to the YAML file
           with open('dns_to_ip.yaml', 'w') as file:
               yaml.dump(sorted_data, file, default_flow_style=False)
+          " > sort_yaml.py
+          python sort_yaml.py
 
-      # Step 4: Check if the file has changed (do not exit on changes)
       - name: Check for changes
         run: |
           git diff --exit-code dns_to_ip.yaml || echo "Changes detected, proceeding to commit."
 
-      # Step 5: Commit and push sorted file if changes occurred
       - name: Commit and push sorted file
-        if: always() # Always run this step
+        if: always()
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.name 'GitHub Actions'
             git config --global user.email 'actions@github.com'
             git add dns_to_ip.yaml
             git commit -m "Auto-sorted YAML file"
-            git push;
+            git push
           else
-            echo "No changes to commit.";
+            echo "No changes to commit."
           fi
